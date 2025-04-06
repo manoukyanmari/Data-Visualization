@@ -1,0 +1,87 @@
+
+---
+title: "Bundesliga Home Advantage Analysis"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(reshape2)
+library(janitor)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load and Inspect Data
+
+```{r}
+# Load the data
+bundesliga <- read.csv("bundesliga.csv")
+
+# Clean the column names
+bundesliga <- bundesliga %>% clean_names()
+
+# Check available columns
+names(bundesliga)
+```
+
+### 1. Heatmap of Home vs Away Wins Per Team Per Season
+
+```{r}
+# Create match result column manually using goals
+bundesliga <- bundesliga %>%
+  mutate(result = case_when(
+    fthg > ftag ~ "H",
+    ftag > fthg ~ "A",
+    TRUE ~ "D"
+  )) %>%
+  filter(result %in% c("H", "A"))  # exclude draws
+
+# Convert to long format with team and location
+win_summary <- bundesliga %>%
+  pivot_longer(cols = c(hometeam, awayteam), names_to = "loc", values_to = "team") %>%
+  mutate(win = case_when(
+    result == "H" & loc == "hometeam" ~ 1,
+    result == "A" & loc == "awayteam" ~ 1,
+    TRUE ~ 0
+  )) %>%
+  group_by(season, team, loc) %>%
+  summarise(wins = sum(win, na.rm = TRUE), .groups = 'drop')
+
+# Convert back to wide format for heatmap
+win_wide <- win_summary %>%
+  pivot_wider(names_from = loc, values_from = wins, values_fill = 0)
+
+# Prepare heatmap data
+heat_data <- melt(win_wide, id.vars = c("season", "team"))
+
+# Plot the heatmap
+ggplot(heat_data, aes(x = season, y = team, fill = value)) +
+  geom_tile(color = "white") +
+  facet_wrap(~variable) +
+  scale_fill_gradient(low = "lightyellow", high = "darkblue") +
+  labs(title = "Heatmap of Wins by Team (Home vs Away)",
+       x = "Season", y = "Team", fill = "Wins") +
+  theme_minimal()
+```
+
+### 2. Density Plot of Home vs Away Win Difference
+
+```{r}
+# Calculate home vs away win difference
+point_diff <- win_wide %>%
+  mutate(diff = hometeam - awayteam)
+
+# Plot density of win differences
+ggplot(point_diff, aes(x = diff)) +
+  geom_density(fill = "purple", alpha = 0.5) +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Density of Home vs Away Win Differences by Team",
+    x = "Home - Away Win Difference",
+    y = "Density"
+  ) +
+  theme_minimal()
+```

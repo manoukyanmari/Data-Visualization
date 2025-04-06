@@ -1,0 +1,123 @@
+
+---
+title: "Bundesliga Time Series Analysis"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+
+# Load necessary libraries
+if (!requireNamespace("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+
+if (!requireNamespace("lubridate", quietly = TRUE)) {
+  install.packages("lubridate")
+}
+
+if (!requireNamespace("ggthemes", quietly = TRUE)) {
+  install.packages("ggthemes")
+}
+
+
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Part 1: Trend Analysis
+
+#### 1. Total and Average Goals Per Season
+
+```{r}
+bundesliga <- read.csv("bundesliga.csv")
+bundesliga <- bundesliga %>%
+  mutate(DATE = as.Date(DATE),
+         Total_Goals = FTHG + FTAG)
+
+goals_season <- bundesliga %>%
+  group_by(SEASON) %>%
+  summarise(
+    Total_Goals = sum(Total_Goals, na.rm = TRUE),
+    Match_Count = n(),
+    Avg_Goals = mean(Total_Goals, na.rm = TRUE)
+  )
+
+ggplot(goals_season, aes(x = as.factor(SEASON))) +
+  geom_line(aes(y = Total_Goals, group = 1, color = "Total Goals")) +
+  geom_line(aes(y = Avg_Goals * 50, group = 1, color = "Avg Goals (x50)")) +
+  scale_y_continuous(
+    name = "Total Goals",
+    sec.axis = sec_axis(~./50, name = "Avg Goals per Match")
+  ) +
+  labs(
+    title = "Trend of Total and Average Goals per Season",
+    x = "Season"
+  ) +
+  scale_color_manual(values = c("Total Goals" = "steelblue", "Avg Goals (x50)" = "darkred")) +
+  theme_bw()
+```
+
+#### 2. Goal Distribution Per Match by Season
+
+```{r}
+bundesliga <- bundesliga %>%
+  mutate(Match_Goals = FTHG + FTAG)
+
+season_avg <- bundesliga %>%
+  group_by(SEASON) %>%
+  summarise(avg_goals = mean(Match_Goals, na.rm = TRUE)) %>%
+  mutate(Threshold = ifelse(avg_goals > 2.5, "Above 2.5", "Below 2.5"))
+
+bundesliga <- bundesliga %>%
+  left_join(season_avg, by = "SEASON")
+
+ggplot(bundesliga, aes(x = Match_Goals, fill = Threshold)) +
+  geom_histogram(binwidth = 1, color = "black") +
+  facet_wrap(~ SEASON, scales = "free_y") +
+  scale_fill_manual(values = c("Above 2.5" = "forestgreen", "Below 2.5" = "orange")) +
+  labs(
+    title = "Distribution of Goals per Match by Season",
+    x = "Goals per Match",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+#### 3. Team Goals Trend per Season
+
+```{r}
+pdf("team_goal_trends.pdf", width = 10, height = 6)
+
+for (s in unique(bundesliga$SEASON)) {
+  df <- bundesliga %>%
+    filter(SEASON == s) %>%
+    pivot_longer(cols = c(HOMETEAM, AWAYTEAM),
+                 names_to = "Location",
+                 values_to = "Team") %>%
+    mutate(Goals = ifelse(Location == "HOMETEAM", FTHG, FTAG)) %>%
+    group_by(Team) %>%
+    summarise(Season_Goals = sum(Goals, na.rm = TRUE)) %>%
+    ungroup()
+
+  bayern_goals <- df %>% filter(Team == "Bayern Munchen") %>% pull(Season_Goals)
+
+  p <- ggplot(df, aes(x = reorder(Team, -Season_Goals), y = Season_Goals)) +
+    geom_col(aes(fill = Team == "Bayern Munchen")) +
+    scale_fill_manual(values = c("TRUE" = "red", "FALSE" = "gray")) +
+    labs(
+      title = paste("Goals per Team –", s),
+      subtitle = paste("Bayern Munchen scored", bayern_goals, "goals"),
+      x = "Team", y = "Goals"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
+
+  print(p)
+}
+
+dev.off()
+```
