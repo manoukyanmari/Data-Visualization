@@ -1,0 +1,11 @@
+"0","# Filter only home or away wins (exclude draws)"
+"0","bundesliga <- bundesliga %>%"
+"0","  filter(ftr %in% c(""H"", ""A""))"
+"1","[1m[33mError[39m in `filter()`:[22m
+[38;5;232m[36mℹ[38;5;232m In argument: `ftr %in% c(""H"", ""A"")`.[39m
+[1mCaused by error:[22m
+[33m![39m object 'ftr' not found
+Backtrace:
+[90m 1. [39mbundesliga %>% filter(ftr %in% c(""H"", ""A""))
+[90m 9. [39mftr %in% c(""H"", ""A"")
+"

@@ -1,0 +1,83 @@
+
+---
+title: "Bundesliga Team Performance Analysis"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load and Inspect Data
+
+```{r}
+# Load the dataset and clean column names
+bundesliga <- read.csv("bundesliga.csv")
+bundesliga <- bundesliga %>% clean_names()
+
+# Check what columns we have
+names(bundesliga)
+```
+
+### 1. Total Goals Scored Per Team
+
+```{r}
+# Calculate total goals at home
+home_goals <- bundesliga %>%
+  group_by(team = hometeam) %>%
+  summarise(home_goals = sum(fthg, na.rm = TRUE))
+
+# Calculate total goals away
+away_goals <- bundesliga %>%
+  group_by(team = awayteam) %>%
+  summarise(away_goals = sum(ftag, na.rm = TRUE))
+
+# Merge home and away totals
+team_goals <- left_join(home_goals, away_goals, by = "team") %>%
+  mutate(total_goals = home_goals + away_goals)
+```
+
+### 2. Bar Plot: Total Goals by Team
+
+```{r}
+# Bar plot of all teams ordered by total goals
+ggplot(team_goals, aes(x = reorder(team, -total_goals), y = total_goals)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Total Goals Scored by Team",
+    x = "Team",
+    y = "Goals"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 3. Highlight Top and Bottom 5 Teams
+
+```{r}
+# Get top and bottom 5 teams by total goals
+top_teams <- team_goals %>% arrange(desc(total_goals)) %>% head(5)
+bottom_teams <- team_goals %>% arrange(total_goals) %>% head(5)
+
+# Combine and mark top teams
+highlight_teams <- bind_rows(top_teams, bottom_teams) %>%
+  mutate(category = ifelse(team %in% top_teams$team, "Top 5", "Bottom 5"))
+
+# Bar plot of extreme teams
+ggplot(highlight_teams, aes(x = reorder(team, -total_goals), y = total_goals, fill = category)) +
+  geom_col() +
+  scale_fill_manual(values = c("Top 5" = "darkgreen", "Bottom 5" = "darkred")) +
+  labs(
+    title = "Top and Bottom 5 Teams by Total Goals",
+    x = "Team",
+    y = "Goals",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```

@@ -1,0 +1,96 @@
+
+---
+title: "Bundesliga Visualization for Presentation"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load and Prepare Data
+
+```{r}
+# Load and clean the data
+bundesliga <- read.csv("bundesliga.csv")
+bundesliga <- bundesliga %>% clean_names()
+
+# Check column names
+names(bundesliga)
+```
+
+### 1. Season Trend: Average Goals per Match (Presentation Ready)
+
+```{r}
+# Create total goals per match and compute average per season
+bundesliga <- bundesliga %>%
+  mutate(total_goals = fthg + ftag)
+
+season_avg <- bundesliga %>%
+  group_by(season) %>%
+  summarise(avg_goals = mean(total_goals, na.rm = TRUE))
+
+# Line chart showing season trend
+ggplot(season_avg, aes(x = season, y = avg_goals, group = 1)) +
+  geom_line(size = 1.2, color = "steelblue") +
+  geom_point(size = 2, color = "darkred") +
+  labs(
+    title = "Average Goals per Match by Season",
+    x = "Season",
+    y = "Average Goals"
+  ) +
+  theme_minimal()
+```
+
+### 2. Top 5 Team Bar Chart (Optimized for Slides)
+
+```{r}
+# Total goals per team
+team_totals <- bundesliga %>%
+  group_by(hometeam) %>%
+  summarise(home_goals = sum(fthg)) %>%
+  rename(team = hometeam) %>%
+  left_join(
+    bundesliga %>%
+      group_by(awayteam) %>%
+      summarise(away_goals = sum(ftag)) %>%
+      rename(team = awayteam),
+    by = "team"
+  ) %>%
+  mutate(total_goals = home_goals + away_goals)
+
+top_5 <- team_totals %>%
+  arrange(desc(total_goals)) %>%
+  slice_head(n = 5)
+
+# Presentation-style bar chart
+ggplot(top_5, aes(x = reorder(team, total_goals), y = total_goals)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 5 Teams by Total Goals",
+    x = "Team",
+    y = "Goals"
+  ) +
+  theme_minimal()
+```
+
+### 3. Annotated Scatter Plot: Home vs Away Goals
+
+```{r}
+# Scatter plot with annotation for linearity
+ggplot(bundesliga, aes(x = fthg, y = ftag)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  annotate("text", x = 6, y = 5.5, label = "Line of Best Fit", hjust = 0, size = 4) +
+  labs(
+    title = "Relationship Between Home and Away Goals",
+    x = "Home Goals",
+    y = "Away Goals"
+  ) +
+  theme_minimal()
+```

@@ -1,0 +1,74 @@
+
+---
+title: "Bundesliga Home Advantage Analysis"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(reshape2)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Part 2: Home Advantage Deconstructed
+
+#### 1. Heatmap of Home vs Away Wins Per Team Per Season
+
+```{r}
+# Read and inspect data
+bundesliga <- read.csv("bundesliga.csv")
+names(bundesliga)
+
+# Filter valid results
+bundesliga <- bundesliga %>%
+  filter(FTR %in% c("H", "A"))
+
+# Compute wins per team, season, home/away
+win_summary <- bundesliga %>%
+  pivot_longer(cols = c(HOMETEAM, AWAYTEAM), names_to = "Loc", values_to = "Team") %>%
+  mutate(Win = case_when(
+    FTR == "H" & Loc == "HOMETEAM" ~ 1,
+    FTR == "A" & Loc == "AWAYTEAM" ~ 1,
+    TRUE ~ 0
+  )) %>%
+  group_by(SEASON, Team, Loc) %>%
+  summarise(Wins = sum(Win, na.rm = TRUE), .groups = 'drop')
+
+# Reshape for heatmap
+win_wide <- win_summary %>%
+  pivot_wider(names_from = Loc, values_from = Wins, values_fill = 0)
+
+# Melt and plot
+heat_data <- melt(win_wide, id.vars = c("SEASON", "Team"))
+
+ggplot(heat_data, aes(x = SEASON, y = Team, fill = value)) +
+  geom_tile(color = "white") +
+  facet_wrap(~variable) +
+  scale_fill_gradient(low = "lightyellow", high = "darkblue") +
+  labs(title = "Heatmap of Wins by Team (Home vs Away)",
+       x = "Season", y = "Team", fill = "Wins") +
+  theme_minimal()
+```
+
+#### 2. Point Differential Density: Home vs Away Win Difference
+
+```{r}
+# Calculate home - away win difference
+point_diff <- win_wide %>%
+  mutate(Diff = HOMETEAM - AWAYTEAM)
+
+# Density plot
+ggplot(point_diff, aes(x = Diff)) +
+  geom_density(fill = "purple", alpha = 0.5) +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Density of Home vs Away Win Differences by Team",
+    x = "Home - Away Win Difference",
+    y = "Density"
+  ) +
+  theme_minimal()
+```

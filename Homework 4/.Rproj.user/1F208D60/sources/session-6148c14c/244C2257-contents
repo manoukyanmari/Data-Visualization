@@ -1,0 +1,103 @@
+
+---
+title: "Bundesliga vs Bundesliga 2 Comparison"
+author: "Mariam"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+# Load necessary libraries
+if (!requireNamespace("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+
+if (!requireNamespace("lubridate", quietly = TRUE)) {
+  install.packages("lubridate")
+}
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+
+if (!requireNamespace("janitor", quietly = TRUE)) {
+  install.packages("janitor")
+}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load and Prepare Both Datasets
+
+```{r}
+# Load both Bundesliga and Bundesliga 2 data
+bundesliga <- read.csv("bundesliga.csv") %>% clean_names()
+bundesliga2 <- read.csv("bundesliga2.csv") %>% clean_names()
+
+# Add a league label
+bundesliga$league_level <- "Bundesliga"
+bundesliga2$league_level <- "Bundesliga 2"
+
+# Combine the two datasets
+combined <- bind_rows(bundesliga, bundesliga2)
+```
+
+### 1. Compare Average Goals per Match
+
+```{r}
+# Calculate total goals per match
+combined <- combined %>%
+  mutate(total_goals = fthg + ftag)
+
+# Group by league and season for comparison
+league_comparison <- combined %>%
+  group_by(league_level, season) %>%
+  summarise(avg_goals = mean(total_goals, na.rm = TRUE), .groups = 'drop')
+
+# Line plot comparing goal averages
+ggplot(league_comparison, aes(x = season, y = avg_goals, color = league_level, group = league_level)) +
+  geom_line(size = 1) +
+  geom_point() +
+  labs(
+    title = "Average Goals per Match: Bundesliga vs Bundesliga 2",
+    x = "Season",
+    y = "Average Goals",
+    color = "League"
+  ) +
+  theme_minimal()
+```
+
+### 2. Boxplot Comparison of Total Goals
+
+```{r}
+# Boxplot of total goals by league
+ggplot(combined, aes(x = league_level, y = total_goals, fill = league_level)) +
+  geom_boxplot() +
+  labs(
+    title = "Distribution of Total Goals per Match by League",
+    x = "League",
+    y = "Total Goals"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Bundesliga" = "darkblue", "Bundesliga 2" = "darkorange"))
+```
+
+### 3. Summary Table of Goal Statistics by League
+
+```{r}
+# Summary statistics
+summary_table <- combined %>%
+  group_by(league_level) %>%
+  summarise(
+    mean_goals = mean(total_goals),
+    median_goals = median(total_goals),
+    sd_goals = sd(total_goals),
+    .groups = 'drop'
+  )
+
+# Display table
+summary_table
+```
