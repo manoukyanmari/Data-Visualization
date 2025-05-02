@@ -1,0 +1,8 @@
+"0","df %>%"
+"0","  count(Publisher, sort = TRUE) %>%"
+"0","  top_n(10, n) %>%"
+"0","  ggplot(aes(x = reorder(Publisher, n), y = n)) +"
+"0","  geom_col(fill = ""purple"") +"
+"0","  coord_flip() +"
+"0","  labs(title = ""Top 10 Publishers by Number of Readers"", x = ""Publisher"", y = ""Count"") +"
+"0","  theme_minimal()"

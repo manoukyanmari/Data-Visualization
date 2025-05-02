@@ -1,0 +1,5 @@
+"0","ggplot(df, aes(x=Gender, fill=Gender)) +"
+"0","  geom_bar() +"
+"0","  labs(title=""Gender Distribution"", y=""Count"") +"
+"0","  theme_minimal()"
+"0",""

@@ -1,0 +1,8 @@
+"0","df %>%"
+"0","  count(Weekday) %>%"
+"0","  ggplot(aes(x=reorder(Weekday, n), y=n)) +"
+"0","  geom_col(fill=""purple"") +"
+"0","  coord_flip() +"
+"0","  labs(title=""Transactions by Weekday"", x=""Weekday"", y=""Count"") +"
+"0","  theme_minimal()"
+"0",""

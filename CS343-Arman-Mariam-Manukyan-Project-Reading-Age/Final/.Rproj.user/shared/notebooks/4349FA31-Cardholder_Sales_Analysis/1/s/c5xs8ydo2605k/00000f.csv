@@ -1,0 +1,8 @@
+"0","product_stats <- df %>%"
+"0","  group_by(Product) %>%"
+"0","  summarise("
+"0","    TotalRevenue = sum(Revenue, na.rm = TRUE),"
+"0","    AvgPrice = mean(Revenue, na.rm = TRUE),"
+"0","    Count = n()"
+"0","  )"
+"0",""

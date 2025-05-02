@@ -1,0 +1,4 @@
+"0","ggplot(df, aes(x = Revenue)) +"
+"0","  geom_density(fill = ""lightblue"", alpha = 0.6) +"
+"0","  labs(title = ""Revenue Density Plot"", x = ""Revenue"", y = ""Density"") +"
+"0","  theme_minimal()"

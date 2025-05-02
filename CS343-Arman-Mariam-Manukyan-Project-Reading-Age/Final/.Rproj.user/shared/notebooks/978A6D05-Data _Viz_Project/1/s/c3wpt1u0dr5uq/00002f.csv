@@ -1,0 +1,5 @@
+"0","df <- read.csv(""fullData.csv"")"
+"0","df_clean <- df %>%"
+"0","  filter(!is.na(Age), Age >= 10, Age <= 80) %>%"
+"0","  mutate(across(where(is.character), ~gsub(""\\[|\\]"", """", .)))"
+"0","df_clean"

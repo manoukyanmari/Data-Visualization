@@ -1,0 +1,7 @@
+"0","df <- read.csv(""final_structured_cardholders1.csv"")"
+"0","df$Date <- suppressWarnings(ymd(df$Date))"
+"0","df$Datetime <- as.POSIXct(paste(df$Date, df$Time))"
+"0","df$Hour <- hour(df$Datetime)"
+"0","df$Weekday <- weekdays(df$Date)"
+"0","df$Month <- format(df$Date, ""%Y-%m"")"
+"0","df"

@@ -1,0 +1,8 @@
+"0","df %>%"
+"0","  mutate(AgeGroup = cut(Age, breaks = c(0, 20, 30, 40, 50, 60, 70, Inf),"
+"0","                        labels = c(""0–20"", ""21–30"", ""31–40"", ""41–50"", ""51–60"", ""61–70"", ""70+""))) %>%"
+"0","  ggplot(aes(x = AgeGroup, y = Revenue)) +"
+"0","  geom_boxplot(fill = ""#9370DB"") +"
+"0","  labs(title = ""Revenue Distribution by Age Group"", x = ""Age Group"", y = ""Revenue"") +"
+"0","  theme_minimal()"
+"0",""

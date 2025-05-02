@@ -1,0 +1,2 @@
+"0","df_clean$genres <- str_replace_all(df_clean$genres, ""'"", """")"
+"0","df_clean$genres <- str_squish(df_clean$genres)"

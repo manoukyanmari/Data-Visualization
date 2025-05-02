@@ -1,0 +1,7 @@
+"0","fiction_skew <- skewness(fiction_by_age$fiction_rate)"
+"0","fiction_kurt <- kurtosis(fiction_by_age$fiction_rate)"
+"0",""
+"0","data.frame("
+"0","  Metric = c(""Skewness"", ""Kurtosis""),"
+"0","  Value = c(round(fiction_skew, 2), round(fiction_kurt, 2))"
+"0",")"

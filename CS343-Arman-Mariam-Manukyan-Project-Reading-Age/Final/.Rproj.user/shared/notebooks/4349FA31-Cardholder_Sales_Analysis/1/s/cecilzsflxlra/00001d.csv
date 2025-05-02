@@ -1,0 +1,8 @@
+"0","df %>%"
+"0","  group_by(Gender) %>%"
+"0","  summarise(AvgRevenue = mean(Revenue)) %>%"
+"0","  ggplot(aes(x = Gender, y = AvgRevenue, fill = Gender)) +"
+"0","  geom_col() +"
+"0","  labs(title = ""Average Revenue per Transaction by Gender"", y = ""Average Revenue"") +"
+"0","  theme_minimal()"
+"0",""

@@ -1,0 +1,7 @@
+"0","ggplot(df_fiction, aes(x = Age, y = reads_fiction)) +"
+"0","  geom_jitter(width = 0.5, height = 0.1, alpha = 0.3, color = ""gray50"") +"
+"0","  geom_smooth(method = ""glm"", method.args = list(family = ""binomial""), se = TRUE, color = ""blue"") +"
+"0","  labs(title = ""Fiction Reading Likelihood by Age (Logistic Regression)"","
+"0","       x = ""Age"", y = ""Probability of Reading Fiction"") +"
+"0","  theme_minimal()"
+"0",""
